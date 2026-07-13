@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <style>
+
+    input[type=button]
+    {
+      background-color:red;color:white;border-radius:30px;width:100%;height:40px;font-size:18px;text-align:center;
+    }
+
+    #btnConnect
+    {
+      background-color:#0066cc;color:white;border-radius:20px;width:100%;height:50px;font-size:20px;
+      border:none;margin-bottom:15px;
+    }
+
+    .modeBtn
+    {
+      background-color:#888;color:white;border-radius:10px;width:100%;height:45px;font-size:20px;text-align:center;border:none;
+    }
+    .modeBtn.aktif { background-color:teal; }
+    .modeBtn.adaRekaman::after { content: " \25CF"; color: yellow; }
+
+    .noselect {
+      -webkit-touch-callout: none;
+        -webkit-user-select: none;
+           -moz-user-select: none;
+            -ms-user-select: none;
+                user-select: none;
+    }
+
+    .slidecontainer { width: 100%; }
+    .slider {
+      -webkit-appearance: none; width: 100%; height: 20px; border-radius: 5px;
+      background: #d3d3d3; outline: none; opacity: 0.7;
+    }
+    .slider::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 40px; height: 40px; border-radius: 50%;
+      background: red; cursor: pointer;
+    }
+
+    select { width: 100%; height: 36px; font-size: 16px; border-radius: 8px; }
+
+    </style>
+  </head>
+  <body class="noselect" align="center" style="background-color:white">
+
+    <h1 style="color: teal;text-align:center;">Hash Include Electronics</h1>
+    <h2 style="color: teal;text-align:center;">Robot Arm Control (Bluetooth BLE)</h2>
+
+    <div style="width:400px;margin:auto;">
+      <button id="btnConnect" onclick="connectBLE()">Connect BLE</button>
+    </div>
+
+    <table style="width:400px;margin:auto;table-layout:fixed" CELLSPACING=6>
+      <tr><td colspan=5 style="text-align:left;font-size:20px"><b>Pilih Mode Aktif:</b></td></tr>
+      <tr>
+        <td><button class="modeBtn" id="modeBtn1" onclick="pilihMode(1)">1</button></td>
+        <td><button class="modeBtn" id="modeBtn2" onclick="pilihMode(2)">2</button></td>
+        <td><button class="modeBtn" id="modeBtn3" onclick="pilihMode(3)">3</button></td>
+        <td><button class="modeBtn" id="modeBtn4" onclick="pilihMode(4)">4</button></td>
+        <td><button class="modeBtn" id="modeBtn5" onclick="pilihMode(5)">5</button></td>
+      </tr>
+    </table>
+
+    <table id="mainTable" style="width:400px;margin:auto;table-layout:fixed" CELLSPACING=10>
+      <tr/><tr/>
+      <tr>
+        <td style="text-align:left;font-size:25px"><b>Gripper:</b></td>
+        <td colspan=2><div class="slidecontainer">
+          <input type="range" min="0" max="180" value="90" class="slider" id="Gripper" oninput='sendButtonInput("Gripper",value)'>
+        </div></td>
+      </tr>
+      <tr/><tr/>
+      <tr>
+        <td style="text-align:left;font-size:25px"><b>Elbow:</b></td>
+        <td colspan=2><div class="slidecontainer">
+          <input type="range" min="0" max="180" value="90" class="slider" id="Elbow" oninput='sendButtonInput("Elbow",value)'>
+        </div></td>
+      </tr>
+      <tr/><tr/>
+      <tr>
+        <td style="text-align:left;font-size:25px"><b>Shoulder:</b></td>
+        <td colspan=2><div class="slidecontainer">
+          <input type="range" min="0" max="180" value="90" class="slider" id="Shoulder" oninput='sendButtonInput("Shoulder",value)'>
+        </div></td>
+      </tr>
+      <tr/><tr/>
+      <tr>
+        <td style="text-align:left;font-size:25px"><b>Base:</b></td>
+        <td colspan=2><div class="slidecontainer">
+          <input type="range" min="0" max="180" value="90" class="slider" id="Base" oninput='sendButtonInput("Base",value)'>
+        </div></td>
+      </tr>
+      <tr/><tr/>
+      <tr>
+        <td style="text-align:left;font-size:22px"><b>Record (Mode <span id="labelModeRecord">1</span>):</b></td>
+        <td><input type="button" id="Record" value="OFF" onclick='onclickButton(this)'></td>
+        <td></td>
+      </tr>
+      <tr/><tr/>
+      <tr>
+        <td style="text-align:left;font-size:22px"><b>Play (Mode <span id="labelModePlay">1</span>):</b></td>
+        <td><input type="button" id="Play" value="OFF" onclick='onclickButton(this)'></td>
+        <td></td>
+      </tr>
+    </table>
+
+    <hr style="width:400px;margin:20px auto;">
+
+    <table style="width:400px;margin:auto;table-layout:fixed" CELLSPACING=6>
+      <tr><td colspan=2 style="text-align:left;font-size:20px"><b>Urutan Pemutaran:</b></td></tr>
+      <tr><td style="text-align:left">Urutan ke-1:</td><td>
+        <select id="Urutan1" onchange="kirimUrutan()">
+          <option value="1">Mode 1</option><option value="2">Mode 2</option>
+          <option value="3">Mode 3</option><option value="4">Mode 4</option><option value="5">Mode 5</option>
+        </select></td></tr>
+      <tr><td style="text-align:left">Urutan ke-2:</td><td>
+        <select id="Urutan2" onchange="kirimUrutan()">
+          <option value="1">Mode 1</option><option value="2" selected>Mode 2</option>
+          <option value="3">Mode 3</option><option value="4">Mode 4</option><option value="5">Mode 5</option>
+        </select></td></tr>
+      <tr><td style="text-align:left">Urutan ke-3:</td><td>
+        <select id="Urutan3" onchange="kirimUrutan()">
+          <option value="1">Mode 1</option><option value="2">Mode 2</option>
+          <option value="3" selected>Mode 3</option><option value="4">Mode 4</option><option value="5">Mode 5</option>
+        </select></td></tr>
+      <tr><td style="text-align:left">Urutan ke-4:</td><td>
+        <select id="Urutan4" onchange="kirimUrutan()">
+          <option value="1">Mode 1</option><option value="2">Mode 2</option>
+          <option value="3">Mode 3</option><option value="4" selected>Mode 4</option><option value="5">Mode 5</option>
+        </select></td></tr>
+      <tr><td style="text-align:left">Urutan ke-5:</td><td>
+        <select id="Urutan5" onchange="kirimUrutan()">
+          <option value="1">Mode 1</option><option value="2">Mode 2</option>
+          <option value="3">Mode 3</option><option value="4">Mode 4</option><option value="5" selected>Mode 5</option>
+        </select></td></tr>
+      <tr/><tr/>
+      <tr>
+        <td style="text-align:left;font-size:22px"><b>Play Urutan:</b></td>
+        <td><input type="button" id="PlayUrutan" value="OFF" onclick='onclickButton(this)'></td>
+      </tr>
+    </table>
+
+    <p id="statusKoneksi" style="color:gray;">Belum terhubung. Tekan "Connect BLE" di atas.</p>
+
+    <script>
+      // UUID ini HARUS SAMA PERSIS dengan yang ada di kode ESP32
+      const SERVICE_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
+      const CONTROL_UUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
+      const STATUS_UUID  = "0a3f1000-b7b0-4dfb-9b32-7d6a4e3c9e21";
+
+      let bleDevice, bleServer, controlChar, statusChar;
+      let waktuInteraksiTerakhir = 0;
+      let modeAktifSekarang = 1;
+
+      async function connectBLE() {
+        try {
+          document.getElementById("statusKoneksi").innerText = "Mencari perangkat...";
+          bleDevice = await navigator.bluetooth.requestDevice({
+            filters: [{ services: [SERVICE_UUID] }]
+          });
+          bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
+
+          document.getElementById("statusKoneksi").innerText = "Menghubungkan...";
+          bleServer = await bleDevice.gatt.connect();
+          const service = await bleServer.getPrimaryService(SERVICE_UUID);
+          controlChar = await service.getCharacteristic(CONTROL_UUID);
+          statusChar = await service.getCharacteristic(STATUS_UUID);
+
+          await statusChar.startNotifications();
+          statusChar.addEventListener('characteristicvaluechanged', handleStatusNotify);
+
+          document.getElementById("btnConnect").innerText = "Terhubung ✓";
+          document.getElementById("btnConnect").style.backgroundColor = "green";
+          document.getElementById("statusKoneksi").innerText = "Terhubung ke " + bleDevice.name;
+        } catch (err) {
+          document.getElementById("statusKoneksi").innerText = "Gagal: " + err;
+        }
+      }
+
+      function onDisconnected() {
+        document.getElementById("btnConnect").innerText = "Connect BLE";
+        document.getElementById("btnConnect").style.backgroundColor = "#0066cc";
+        document.getElementById("statusKoneksi").innerText = "Terputus. Tekan Connect BLE lagi.";
+      }
+
+      async function kirimPerintah(key, value) {
+        waktuInteraksiTerakhir = Date.now();
+        if (!controlChar) {
+          document.getElementById("statusKoneksi").innerText = "Belum connect BLE!";
+          return;
+        }
+        const data = new TextEncoder().encode(key + "," + value);
+        try {
+          await controlChar.writeValueWithoutResponse(data);
+        } catch (e) {
+          console.log("Gagal kirim:", e);
+        }
+      }
+
+      function pilihMode(m) {
+        modeAktifSekarang = m;
+        updateTampilanModeAktif();
+        kirimPerintah("Mode", m);
+      }
+
+      function updateTampilanModeAktif() {
+        for (let i = 1; i <= 5; i++) {
+          const btn = document.getElementById("modeBtn" + i);
+          if (i == modeAktifSekarang) btn.classList.add("aktif");
+          else btn.classList.remove("aktif");
+        }
+        document.getElementById("labelModeRecord").innerText = modeAktifSekarang;
+        document.getElementById("labelModePlay").innerText = modeAktifSekarang;
+      }
+
+      function sendButtonInput(key, value) {
+        kirimPerintah(key, value);
+      }
+
+      function onclickButton(button) {
+        button.value = (button.value == "ON") ? "OFF" : "ON";
+        button.style.backgroundColor = (button.value == "ON" ? "green" : "red");
+        const value = (button.value == "ON") ? 1 : 0;
+        kirimPerintah(button.id, value);
+        enableDisableSemua();
+      }
+
+      function kirimUrutan() {
+        for (let i = 1; i <= 5; i++) {
+          const val = document.getElementById("Urutan" + i).value;
+          kirimPerintah("Urutan" + i, val);
+        }
+      }
+
+      function enableDisableSemua() {
+        const play = document.getElementById("Play").value == "ON";
+        const record = document.getElementById("Record").value == "ON";
+        const playUrutan = document.getElementById("PlayUrutan").value == "ON";
+        const sibuk = play || playUrutan;
+
+        const disabled = sibuk ? "none" : "auto";
+        document.getElementById("Gripper").style.pointerEvents = disabled;
+        document.getElementById("Elbow").style.pointerEvents = disabled;
+        document.getElementById("Shoulder").style.pointerEvents = disabled;
+        document.getElementById("Base").style.pointerEvents = disabled;
+        document.getElementById("Record").style.pointerEvents = sibuk ? "none" : "auto";
+        document.getElementById("Play").style.pointerEvents = (record || playUrutan) ? "none" : "auto";
+        document.getElementById("PlayUrutan").style.pointerEvents = (record || play) ? "none" : "auto";
+
+        for (let i = 1; i <= 5; i++) {
+          document.getElementById("modeBtn" + i).style.pointerEvents = sibuk ? "none" : "auto";
+        }
+      }
+
+      function setTombol(id, val) {
+        const el = document.getElementById(id);
+        el.value = (val === "1") ? "ON" : "OFF";
+        el.style.backgroundColor = (val === "1") ? "green" : "red";
+      }
+
+      function handleStatusNotify(event) {
+        if (Date.now() - waktuInteraksiTerakhir < 800) return;
+
+        const value = new TextDecoder().decode(event.target.value);
+        const tokens = value.split(",");
+
+        tokens.forEach(t => {
+          const huruf = t[0];
+          const sisa = t.substring(1);
+
+          if (huruf === "B") document.getElementById("Base").value = sisa;
+          else if (huruf === "S") document.getElementById("Shoulder").value = sisa;
+          else if (huruf === "E") document.getElementById("Elbow").value = sisa;
+          else if (huruf === "G") document.getElementById("Gripper").value = sisa;
+          else if (huruf === "R") setTombol("Record", sisa);
+          else if (huruf === "P") setTombol("Play", sisa);
+          else if (huruf === "U") setTombol("PlayUrutan", sisa);
+          else if (huruf === "M") { modeAktifSekarang = parseInt(sisa); updateTampilanModeAktif(); }
+          else if (huruf === "A") {
+            for (let i = 0; i < 5; i++) {
+              const btn = document.getElementById("modeBtn" + (i + 1));
+              if (sisa[i] == "1") btn.classList.add("adaRekaman");
+              else btn.classList.remove("adaRekaman");
+            }
+          }
+          else if (huruf === "O") {
+            for (let i = 0; i < 5; i++) {
+              document.getElementById("Urutan" + (i + 1)).value = sisa[i];
+            }
+          }
+        });
+
+        enableDisableSemua();
+      }
+
+      window.onload = function() { updateTampilanModeAktif(); };
+      document.getElementById("mainTable").addEventListener("touchend", function(event){
+        event.preventDefault()
+      });
+    </script>
+  </body>
+</html>
